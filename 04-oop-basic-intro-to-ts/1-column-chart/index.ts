@@ -1,19 +1,18 @@
 import { createElement } from "../../shared/utils/create-element";
-
 interface Options {
   data?: number[];
   label?: string;
-  value?: number | string;
+  value?: number;                     
   link?: string;
-  formatHeading?: (value: number | string) => string;
+  formatHeading?: (value: number) => string;  
 }
 
 export default class ColumnChart {
   private data: number[];
   private label: string;
-  private value: number | string;
+  private value: number;              
   private link?: string;
-  private formatHeading?: (value: number | string) => string;
+  private formatHeading?: (value: number) => string;
   readonly chartHeight: number = 50;
 
   public element: HTMLElement;
@@ -22,7 +21,7 @@ export default class ColumnChart {
   constructor(options: Options = {}) {
     this.data = options.data || [];
     this.label = options.label || '';
-    this.value = options.value ?? 0;
+    this.value = options.value ?? 0;   
     this.link = options.link || '';
     this.formatHeading = options.formatHeading;
 
@@ -35,7 +34,7 @@ export default class ColumnChart {
     root.className = `column-chart ${this.data.length ? '' : 'column-chart_loading'}`;
 
     const formattedValue = this.formatHeading
-      ? this.formatHeading(this.value)
+      ? this.formatHeading(this.value)   
       : String(this.value);
 
     root.innerHTML = `
