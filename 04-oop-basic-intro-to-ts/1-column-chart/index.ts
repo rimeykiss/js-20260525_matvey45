@@ -2,17 +2,17 @@ import { createElement } from "../../shared/utils/create-element";
 interface Options {
   data?: number[];
   label?: string;
-  value?: number | string;
+  value?: number;
   link?: string;
-  formatHeading?: (value: number | string) => string;
+  formatHeading?: (value: number) => string;
 }
 
 export default class ColumnChart {
   private data: number[];
   private label: string;
-  private value: number | string;
+  private value: number;
   private link?: string;
-  private formatHeading?: (value: number | string) => string;
+  private formatHeading?: (value: number) => string;
   readonly chartHeight: number = 50;
 
   private _element: HTMLElement | null = null;
