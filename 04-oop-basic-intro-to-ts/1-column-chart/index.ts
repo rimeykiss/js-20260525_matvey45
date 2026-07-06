@@ -2,42 +2,45 @@ import { createElement } from "../../shared/utils/create-element";
 interface Options {
   data?: number[];
   label?: string;
-  value?: number;                     
+  value?: number | string;
   link?: string;
-  formatHeading?: (value: number) => string;  
+  formatHeading?: (value: number | string) => string;
 }
 
 export default class ColumnChart {
   private data: number[];
   private label: string;
-  private value: number;              
+  private value: number | string;
   private link?: string;
-  private formatHeading?: (value: number) => string;
+  private formatHeading?: (value: number | string) => string;
   readonly chartHeight: number = 50;
 
-  public element: HTMLElement;
-  private bodyElement: HTMLElement;
+  private _element: HTMLElement | null = null;
+  private bodyElement: HTMLElement | null = null;
 
   constructor(options: Options = {}) {
     this.data = options.data || [];
     this.label = options.label || '';
-    this.value = options.value ?? 0;   
-    this.link = options.link || '';
+    this.value = options.value ?? 0;
+    this.link = options.link;
     this.formatHeading = options.formatHeading;
 
-    this.element = this.createElement();
-    this.bodyElement = this.element.querySelector('[data-element="body"]') as HTMLElement;
+    this.render();
   }
 
-  private createElement(): HTMLElement {
-    const root = document.createElement('div');
-    root.className = `column-chart ${this.data.length ? '' : 'column-chart_loading'}`;
+  public get element(): HTMLElement {
+    if (!this._element) {
+      throw new Error('ColumnChart ошибка');
+    }
+    return this._element;
+  }
 
+  private get template(): string {
     const formattedValue = this.formatHeading
-      ? this.formatHeading(this.value)   
+      ? this.formatHeading(this.value)
       : String(this.value);
 
-    root.innerHTML = `
+    return `
       <div class="column-chart__title">
         Total ${this.label}
         ${this.link ? `<a href="${this.link}" class="column-chart__link">View all</a>` : ''}
@@ -49,17 +52,27 @@ export default class ColumnChart {
         </div>
       </div>
     `;
+  }
 
-    return root;
+  private render(): void {
+    this._element = createElement(this.template);
+    this.bodyElement = this._element.querySelector('[data-element="body"]') as HTMLElement;
+    this.updateLoadingState();
   }
 
   private buildColumns(): string {
     if (!this.data.length) return '';
 
-    const maxValue = Math.max(...this.data);
+    const sanitizedData = this.data.map(item => Math.max(0, Number(item)));
+    const maxValue = Math.max(...sanitizedData, 0);
+
+    if (maxValue === 0) {
+      return this.data.map(() => `<div style="--value: 0" data-tooltip="0%"></div>`).join('');
+    }
+
     const scale = this.chartHeight / maxValue;
 
-    return this.data
+    return sanitizedData
       .map(item => {
         const value = Math.floor(item * scale);
         const percent = ((item / maxValue) * 100).toFixed(0);
@@ -68,27 +81,30 @@ export default class ColumnChart {
       .join('');
   }
 
+  private updateLoadingState(): void {
+    const isLoading = !this.data.length;
+    if (this._element) {
+      this._element.classList.toggle('column-chart_loading', isLoading);
+    }
+  }
+
   public update(data: number[]): void {
     this.data = data;
-
-    if (this.data.length) {
-      this.element.classList.remove('column-chart_loading');
-    } else {
-      this.element.classList.add('column-chart_loading');
+    this.updateLoadingState();
+    if (this.bodyElement) {
+      this.bodyElement.innerHTML = this.buildColumns();
     }
-
-    this.bodyElement.innerHTML = this.buildColumns();
   }
 
   public remove(): void {
-    if (this.element.parentNode) {
-      this.element.parentNode.removeChild(this.element);
+    if (this._element && this._element.parentNode) {
+      this._element.parentNode.removeChild(this._element);
     }
   }
 
   public destroy(): void {
     this.remove();
-    this.element = null!;
-    this.bodyElement = null!;
+    this._element = null;
+    this.bodyElement = null;
   }
 }
