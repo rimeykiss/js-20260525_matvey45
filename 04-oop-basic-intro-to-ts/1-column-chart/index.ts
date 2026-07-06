@@ -35,12 +35,13 @@ export default class ColumnChart {
     return this._element;
   }
 
-  private get template(): string {
-    const formattedValue = this.formatHeading
-      ? this.formatHeading(this.value)
-      : String(this.value);
+private get template(): string {
+  const formattedValue = this.formatHeading
+    ? this.formatHeading(this.value)
+    : String(this.value);
 
-    return `
+  return `
+    <div class="column-chart">
       <div class="column-chart__title">
         Total ${this.label}
         ${this.link ? `<a href="${this.link}" class="column-chart__link">View all</a>` : ''}
@@ -51,8 +52,9 @@ export default class ColumnChart {
           ${this.buildColumns()}
         </div>
       </div>
-    `;
-  }
+    </div>
+  `;
+}
 
   private render(): void {
     this._element = createElement(this.template);
