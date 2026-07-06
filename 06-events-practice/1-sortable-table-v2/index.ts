@@ -32,6 +32,7 @@ export default class SortableTable {
   private sorted: SortableTableSort | undefined;
   private isSortLocally: boolean;
   private headerClickHandler: (event: Event) => void;
+
   constructor(headersConfig: SortableTableHeader[] = [], {
     data = [],
     sorted,
@@ -52,7 +53,6 @@ export default class SortableTable {
       headerElement.addEventListener('pointerdown', this.headerClickHandler);
     }
 
-    // Начальная сортировка, если задана
     if (this.sorted) {
       this.sort(this.sorted.id, this.sorted.order);
     }
@@ -129,14 +129,11 @@ export default class SortableTable {
     if (this.isSortLocally) {
       this.sortOnClient(field, order);
     } else {
-      // для серверной сортировки в будущем
       return;
     }
 
-    // Обновляем активную колонку и порядок
     this.sorted = { id: field, order };
 
-    // Обновляем data-order у заголовков
     const headerCells = this._element?.querySelectorAll<HTMLElement>('.sortable-table__cell[data-id]');
     headerCells?.forEach(cell => {
       if (cell.dataset.id === field) {
@@ -146,7 +143,6 @@ export default class SortableTable {
       }
     });
 
-    // Перерисовываем тело таблицы
     if (this.bodyElement) {
       this.bodyElement.innerHTML = this.buildBody();
     }
@@ -159,7 +155,6 @@ export default class SortableTable {
     const direction = order === 'asc' ? 1 : -1;
     const sortType = columnConfig.sortType || 'string';
 
-    // Кастомная сортировка
     if (sortType === 'custom' && columnConfig.customSorting) {
       this.data.sort((a, b) => direction * columnConfig.customSorting!(a, b));
       return;
